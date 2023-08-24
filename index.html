@@ -135,6 +135,49 @@
                 border-bottom: 1px solid #1c1f29;
             }
         }
+
+        /* styles.css */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .closingBtn {
+            padding: 10px 20px;
+            background: linear-gradient(to right, #3f51b5 0%, #2c3e86 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+
     </style>
     <title>Chat App</title>
 </head>
@@ -160,6 +203,16 @@
         </div>
     </div>
 </div>
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p><strong>Available commands:</strong>
+        <br><br>/help - Show this message
+        <br>/random - Print a random number
+        <br>/clear - Clear the chat<br></p>
+        <button class="closingBtn" id="closeModalBtn">OK</button>
+    </div>
+</div>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const contacts = document.querySelectorAll(".contact");
@@ -177,6 +230,8 @@
 
         let check = ""
         let emojis = {"react" : "⚛️", "woah" : "😮", "hey" : "👋", "lol" : "😂", "like" : "❤️", "congratulations" : "🎉"}
+        let toEmit = true
+        let toShow = true
 
 
         contacts.forEach(contact => {
@@ -200,6 +255,7 @@
         }
 
         sendButton.addEventListener("click", (e) => {
+            const selectedContact = document.querySelector(".contact.active").getAttribute("data-contact");
             let messageText = chatInput.value.trim();
             if (messageText !== "") {
                 messageText = messageText.split(" ").map(word => {
@@ -208,12 +264,37 @@
                     }
                     return word;
                 }).join(" ");
-                const selectedContact = document.querySelector(".contact.active").getAttribute("data-contact");
-                saveMessageOut(selectedContact, messageText);
+                if (messageText === "/help"){
+                    showModal()
+                    toEmit = false
+                    toShow = false
+                }
+                if (messageText === "/random") {
+                    messageText = "Here's a random number : " + (Math.random());
+                    toEmit = false
+                    //Italize the whole message
+                    messageText = `<i>${messageText}</i>`;
+                }
+
+                if(messageText === "/clear"){
+                    chatHistory[selectedContact] = []
+                    toEmit = false
+                    toShow = false
+                    renderChatHistory(selectedContact)
+                }
+                if (toShow) {
+                    saveMessageOut(selectedContact, messageText);
+                }else{
+                    toShow = true
+                }
                 renderChatHistory(selectedContact);
                 chatInput.value = "";
                 chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom
-                socket.emit('chat message', messageText);
+                if (toEmit) {
+                    socket.emit('chat message', messageText);
+                }else {
+                    toEmit = true
+                }
                 check = messageText
             }
         });
@@ -249,6 +330,29 @@
             });
         }
     });
+
+    const openModalBtn = document.getElementById("openModalBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const modal = document.getElementById("myModal");
+
+    function showModal() {
+        modal.style.display = "flex";
+    }
+
+    closeModalBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    // Hide the modal initially
+    modal.style.display = "none";
+
+
 
 
 
