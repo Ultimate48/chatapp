@@ -176,6 +176,7 @@
         };
 
         let check = ""
+        let emojis = {"react" : "⚛️", "woah" : "😮", "hey" : "👋", "lol" : "😂", "like" : "❤️", "congratulations" : "🎉"}
 
 
         contacts.forEach(contact => {
@@ -199,8 +200,14 @@
         }
 
         sendButton.addEventListener("click", (e) => {
-            const messageText = chatInput.value.trim();
+            let messageText = chatInput.value.trim();
             if (messageText !== "") {
+                messageText = messageText.split(" ").map(word => {
+                    if (word in emojis) {
+                        return emojis[word];
+                    }
+                    return word;
+                }).join(" ");
                 const selectedContact = document.querySelector(".contact.active").getAttribute("data-contact");
                 saveMessageOut(selectedContact, messageText);
                 renderChatHistory(selectedContact);
