@@ -209,7 +209,10 @@
         <p><strong>Available commands:</strong>
         <br><br>/help - Show this message
         <br>/random - Print a random number
-        <br>/clear - Clear the chat<br></p>
+        <br>/clear - Clear the chat
+        <br>/rem 'name' 'value' - Set a reminder
+        <br>/rem 'name' - Print the reminder<br><br>
+        </p>
         <button class="closingBtn" id="closeModalBtn">OK</button>
     </div>
 </div>
@@ -233,6 +236,7 @@
         let toEmit = true
         let toShow = true
 
+        let rem = {}
 
         contacts.forEach(contact => {
             const contactName = contact.getAttribute("data-contact");
@@ -264,6 +268,23 @@
                     }
                     return word;
                 }).join(" ");
+                if (messageText.split(" ")[0] === "/rem"){
+                    let key = messageText.split(" ")[1]
+                    if (key in rem)
+                        messageText = rem[key]
+                    else {
+                        rem[key] = messageText.substring(5 + key.length)
+                        messageText = key + " set to " + rem[key]
+                        messageText = `<i>${messageText}</i>`
+                        toEmit = false
+                    }
+                }
+                // if (messageText.split(" ")[0] === "/calc"){
+                //     let expression = messageText.substring(6)
+                //     messageText = calculateWithMathJS(expression)
+                //     messageText = `<i>${messageText}</i>`
+                //     toEmit = false
+                // }
                 if (messageText === "/help"){
                     showModal()
                     toEmit = false
@@ -272,8 +293,7 @@
                 if (messageText === "/random") {
                     messageText = "Here's a random number : " + (Math.random());
                     toEmit = false
-                    //Italize the whole message
-                    messageText = `<i>${messageText}</i>`;
+                    messageText = `<i>${messageText}</i>`
                 }
 
                 if(messageText === "/clear"){
@@ -351,6 +371,20 @@
 
     // Hide the modal initially
     modal.style.display = "none";
+
+    const math = require('mathjs');
+
+    // Function to perform calculations using math.js
+    function calculateWithMathJS(expression) {
+        try {
+            // Use the math.evaluate() function to evaluate the expression
+            const result = math.evaluate(expression);
+            return result;
+        } catch (error) {
+            console.log(expression);
+            return "Error: Invalid expression";
+        }
+    }
 
 
 
